@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { connectToDatabase } = require('./models/db');
+const connectToDatabase = require('./models/db');
 
 // Import routes
 const secondChanceItemsRoutes = require('./routes/secondChanceItemsRoutes');
