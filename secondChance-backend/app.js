@@ -1,8 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const { connectToDatabase } = require('./models/db');
-// Task 1: Import the secondChanceItemsRoutes
+
+// Import routes
 const secondChanceItemsRoutes = require('./routes/secondChanceItemsRoutes');
+// Task 1: Import the searchRoutes and store in a constant called searchRoutes
+const searchRoutes = require('./routes/searchRoutes');
 
 const app = express();
 const PORT = 3060;
@@ -14,8 +17,10 @@ app.use(express.json());
 // Serve static files (like uploaded images)
 app.use(express.static('public'));
 
-// Task 2: Add the secondChanceItemsRoutes to the server
+// Connect routers to paths
 app.use('/api/secondchance/items', secondChanceItemsRoutes);
+// Task 2: Add the searchRoutes to the server using the app.use() method
+app.use('/api/secondchance/search', searchRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
