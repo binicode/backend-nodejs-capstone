@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secondchancefrontend
+  labels:
+    app: secondchancefrontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: secondchancefrontend
+  template:
+    metadata:
+      labels:
+        app: secondchancefrontend
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      imagePullSecrets:
+        - name: icr
+
+      containers:
+        - name: secondchancefrontend-container
+          image: us.icr.io/sn-labs-myrita099/secondchancefrontend:latest
+          ports:
+            - containerPort: 9000
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: secondchance-frontend-service
+spec:
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000
+      nodePort: 30009
+  selector:
+    app: secondchancefrontend
