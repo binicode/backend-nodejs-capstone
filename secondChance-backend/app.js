@@ -1,46 +1,50 @@
+/*jshint esversion: 8 */
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectToDatabase = require('./models/db');
+const pinoLogger = require('./logger');
+const path = require('path');
 
-// Import routes
-const secondChanceItemsRoutes = require('./routes/secondChanceItemsRoutes');
-// Task 1: Import the searchRoutes and store in a constant called searchRoutes
-const searchRoutes = require('./routes/searchRoutes');
+const connectToDatabase = require('./models/db');
+const {loadData} = require("./util/import-mongo/index");
+
 
 const app = express();
-const PORT = 3060;
+app.use("*",cors());
+const port = 3060;
 
-// Enable CORS and JSON parsing middleware
-app.use(cors());
+// Connect to MongoDB; we just do this one time
+connectToDatabase().then(() => {
+    pinoLogger.info('Connected to DB');
+})
+    .catch((e) => console.error('Failed to connect to DB', e));
+
+
 app.use(express.json());
 
-// Serve static files (like uploaded images)
-app.use(express.static('public'));
+// Route files
+const secondChanceRoutes = require('./routes/secondChanceItemsRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+const pinoHttp = require('pino-http');
+const logger = require('./logger');
 
-// Connect routers to paths
-app.use('/api/secondchance/items', secondChanceItemsRoutes);
-// Task 2: Add the searchRoutes to the server using the app.use() method
+app.use(pinoHttp({ logger }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Use Routes
+app.use('/api/secondchance/items', secondChanceRoutes);
 app.use('/api/secondchance/search', searchRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something went wrong on the server!');
+    console.error(err);
+    res.status(500).send('Internal Server Error');
 });
 
-// Connect to Database and Start Server
-async function startServer() {
-    try {
-        await connectToDatabase();
-        console.log("Connected successfully to MongoDB.");
-        
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
-    } catch (error) {
-        console.error("Failed to connect to the database", error);
-        process.exit(1);
-    }
-}
+app.get("/",(req,res)=>{
+    res.send("Inside the server")
+})
 
-startServer();
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
