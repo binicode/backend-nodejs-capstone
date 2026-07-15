@@ -1,0 +1,35 @@
+name: 'CI/CD'
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  lint_js:
+    name: Lint JavaScript Files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install and Run Linter
+      run: |
+        npm init -y
+        npm install eslint eslint-config-standard eslint@^8.0.1 eslint-plugin-import@^2.25.2 eslint-plugin-n@^16.0.0 eslint-plugin-promise@^6.0.0
+        
+        # Lint all Javascript files
+        ./node_modules/.bin/eslint -c .eslintrc.js secondChance-backend/app.js
+        ./node_modules/.bin/eslint -c .eslintrc.js secondChance-backend/routes/authRoutes.js
+        ./node_modules/.bin/eslint -c .eslintrc.js secondChance-backend/routes/secondChanceItemsRoutes.js
+        ./node_modules/.bin/eslint -c .eslintrc.js secondChance-backend/routes/searchRoutes.js
+        ./node_modules/.bin/eslint -c .eslintrc.js sentiment/index.js
+        
+        echo "Linted all the js files successfully"
